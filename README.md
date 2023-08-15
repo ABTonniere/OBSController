@@ -8,7 +8,7 @@ This project will be build upon the obs-websocket project, and the NDI technolog
 
 
 # Credits
-Le Luet Hôa
-Moreira Vidal Pereira
-OBS Studio and the members of the obs-websockets project
-tt2468 for the simpleobsws library
+- Le Luet Hôa 
+- Moreira Vidal Pereira
+- OBS Studio and the members of the obs-websockets project
+- tt2468 for the simpleobsws library
