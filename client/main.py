@@ -7,8 +7,11 @@ import websockets
 
 pp = pprint.PrettyPrinter(indent=4)
 
+ip = "localhost"
+port = 4455
+
 def sendPacket(json_request):
-    with connect("ws://localhost:4455") as websocket:
+    with websockets.connect("ws://" + ip + ":" + str(port)) as websocket:
         pp.pprint(json_request)
         websocket.send(json_request)
         message = websocket.recv()
@@ -41,7 +44,7 @@ def authenticate():
     """
 
 async def initialize():
-    async with websockets.connect("ws://localhost:4455") as websocket:
+    async with websockets.connect("ws://" + ip + ":" + str(port)) as websocket:
             message = await websocket.recv()
             print("Received message:",message)
             response = json.loads(message)
@@ -57,6 +60,7 @@ async def initialize():
 
             await websocket.send(json.dumps(identifyPacket))
             print(identifyPacket)
+            
 
 
 
