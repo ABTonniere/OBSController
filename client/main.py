@@ -45,6 +45,7 @@ def authenticate():
 
 async def initialize():
     async with websockets.connect("ws://" + ip + ":" + str(port)) as websocket:
+            
             message = await websocket.recv()
             print("Received message:",message)
             response = json.loads(message)
@@ -60,6 +61,7 @@ async def initialize():
 
             await websocket.send(json.dumps(identifyPacket))
             print(identifyPacket)
+            return websocket 
             
 
 
