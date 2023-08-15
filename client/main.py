@@ -1,8 +1,9 @@
 import asyncio
 import json
 import pprint
+import websockets
 
-from websockets.sync.client import connect
+##from websockets.sync.client import connect
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -26,7 +27,7 @@ def changeScene(scene_name):
 
 def authenticate():
     ##No password needed for the first versions of this project
-    sendPacket({})
+    """sendPacket({})
     request = {}
     request['op'] = 1
     data = {}
@@ -37,8 +38,29 @@ def authenticate():
 
 
     sendPacket(json.dumps(request))
+    """
+
+async def initialize():
+    async with websockets.connect("ws://localhost:4455") as websocket:
+            message = await websocket.recv()
+            print("Received message:",message)
+            response = json.loads(message)
+            rpc_version = response["d"]["rpcVersion"]
+
+            identifyPacket = {
+                "op" : 1,
+                "d" : {
+                    "rpcVersion": rpc_version,
+                    "eventSubscriptions" : 33
+                }
+            }
+
+            await websocket.send(json.dumps(identifyPacket))
+            print(identifyPacket)
 
 
 
-authenticate()
+
+asyncio.get_event_loop().run_until_complete(initialize())
+##authenticate()
 ##changeScene("scene")
