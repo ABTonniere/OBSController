@@ -1,72 +1,23 @@
+import logging
+logging.basicConfig(level=logging.DEBUG)
 import asyncio
-import json
-import pprint
-import websockets
+import simpleobsws
 
-##from websockets.sync.client import connect
+parameters = simpleobsws.IdentificationParameters(ignoreNonFatalRequestChecks = False) # Create an IdentificationParameters object (optional for connecting)
 
-pp = pprint.PrettyPrinter(indent=4)
+ws = simpleobsws.WebSocketClient(url = 'ws://192.168.1.16:3945', password = '', identification_parameters = parameters) # Every possible argument has been passed, but none are required. See lib code for defaults.
 
-ip = "localhost"
-port = 4455
+async def make_request():
+    await ws.connect() # Make the connection to obs-websocket
+    await ws.wait_until_identified() # Wait for the identification handshake to complete
 
-def sendPacket(json_request):
-    with websockets.connect("ws://" + ip + ":" + str(port)) as websocket:
-        pp.pprint(json_request)
-        websocket.send(json_request)
-        message = websocket.recv()
-        print(f"Received: {message}")
-        return message
+    request = simpleobsws.Request('SetCurrentProgramScene',{ "sceneName": "scene2"}) # Build a Request object
 
-def changeScene(scene_name):
-    request = {}
-    request['op'] = 6
-    data = {}
-    data['requestType'] = "SetCurrentProgramScene"
-    data['requestId'] = 1
-    data['requestData'] = {"sceneName" : scene_name}
-    request['d'] = json.dumps(data)
-    sendPacket(json.dumps(request))
+    ret = await ws.call(request) # Perform the request
+    if ret.ok(): # Check if the request succeeded
+        print("Request succeeded! Response data: {}".format(ret.responseData))
 
-def authenticate():
-    ##No password needed for the first versions of this project
-    """sendPacket({})
-    request = {}
-    request['op'] = 1
-    data = {}
-    data['rpcVersion'] = 1
-    data['eventSubscriptions'] = 33
-    request['d'] = json.dumps(data)
-    pp.pprint(json.dumps(request))
+    await ws.disconnect() # Disconnect from the websocket server cleanly
 
-
-    sendPacket(json.dumps(request))
-    """
-
-async def initialize():
-    async with websockets.connect("ws://" + ip + ":" + str(port)) as websocket:
-            
-            message = await websocket.recv()
-            print("Received message:",message)
-            response = json.loads(message)
-            rpc_version = response["d"]["rpcVersion"]
-
-            identifyPacket = {
-                "op" : 1,
-                "d" : {
-                    "rpcVersion": rpc_version,
-                    "eventSubscriptions" : 33
-                }
-            }
-
-            await websocket.send(json.dumps(identifyPacket))
-            print(identifyPacket)
-            return websocket 
-            
-
-
-
-
-asyncio.get_event_loop().run_until_complete(initialize())
-##authenticate()
-##changeScene("scene")
+loop = asyncio.get_event_loop()
+loop.run_until_complete(make_request())
