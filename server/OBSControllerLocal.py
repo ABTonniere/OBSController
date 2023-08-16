@@ -64,7 +64,8 @@ async def handler(websocket, path):
             await websocket.send(json.dumps(clients))
 
         case "changeSceneByName":
-            asyncio.get_event_loop().run_until_complete(changeSceneByName(request["data"]["args"]))
+            await changeSceneByName(request["data"]["args"])
+            await websocket.send(json.dumps("Scene changed"))
 
         case other:
             await websocket.send(json.dumps("Invalid command"))
@@ -72,7 +73,7 @@ async def handler(websocket, path):
 
     #await websocket.send()
     #print(socket.gethostbyname(socket.gethostname()))
-    print(request["id"] + " : " + request["data"])
+    print(request["id"] + " : " + request["data"]["command"])
  
  
  
