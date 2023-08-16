@@ -4,16 +4,31 @@ import json
 import socket
  
 # create handler for each connection
+
+clients = ["Gustavo", "Rafael", "Joao"]
  
 async def handler(websocket, path):
  
     data = await websocket.recv()
  
-    reply = json.loads(data)
- 
-    await websocket.send(socket.gethostbyname(socket.gethostname()))
+    request = json.loads(data)
+
+    if request["id"] not in clients:
+        clients.append(request["id"])
+
+
+    match request["data"] :
+        
+        case "getClients":
+            await websocket.send(json.dumps(clients))
+
+        case other:
+            await websocket.send(json.dumps("Invalid command"))
+
+
+    #await websocket.send()
     #print(socket.gethostbyname(socket.gethostname()))
-    print(reply["id"])
+    print(request["id"])
  
  
  
