@@ -12,8 +12,16 @@ parameters = simpleobsws.IdentificationParameters(ignoreNonFatalRequestChecks = 
 
 ws = simpleobsws.WebSocketClient(url = 'ws://localhost:3945', password = '', identification_parameters = parameters) # Every possible argument has been passed, but none are required. See lib code for defaults.
 
-clients = []
 
+
+clients = {
+    "hoa" : "Hoa",
+    "pop-os" : "Hoa",
+    "Gustavo" : "Gustavo",
+    "269142150823767" : "Hoa"
+}
+##with open("utilisateurs.json", "r") as file:
+    ##clients = json.load(file)
 """
 async def make_request():
     await ws.connect() # Make the connection to obs-websocket
@@ -54,8 +62,12 @@ async def handler(websocket, path):
  
     request = json.loads(data)
 
-    if request["id"] not in clients:
-        clients.append(request["id"])
+    if request["id"] in clients.keys():
+        ##clients.append(request["id"])
+        ##with open ("utilisateurs.json", "w") as file:
+            await websocket.send(json.dumps(request["id"]))
+    else:
+        await websocket.send(json.dumps("Invalid user or not registered"))
 
 
     match request["data"]["command"] :
@@ -67,6 +79,9 @@ async def handler(websocket, path):
             await changeSceneByName(request["data"]["args"])
             await websocket.send(json.dumps("Scene changed"))
 
+        case "changeToMyScene":
+            await changeSceneByName(clients[request["id"]])
+            await websocket.send(json.dumps("Scene changed successfully"))
         case other:
             await websocket.send(json.dumps("Invalid command"))
 
