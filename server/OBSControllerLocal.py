@@ -55,40 +55,49 @@ async def changeSceneByName(name):
 
 
 
+
  
+# WebSocket handler function
 async def handler(websocket, path):
- 
-    data = await websocket.recv()
- 
-    request = json.loads(data)
-
-    if request["id"] in clients.keys():
-        ##clients.append(request["id"])
-        ##with open ("utilisateurs.json", "w") as file:
-            await websocket.send(json.dumps(request["id"]))
-    else:
-        await websocket.send(json.dumps("Invalid user or not registered"))
+    try:
+        data = await websocket.recv()
+        request = json.loads(data)
 
 
-    match request["data"]["command"] :
+        #Login
+        if request["data"]["command"] == "login":
+            if request["id"] not in clients.keys():
+                clients[request["id"]] = request["data"]["args"]
+                await websocket.send(json.dumps("Logged in successfully"))
+            else:
+                await websocket.send(json.dumps("Already logged in"))
         
-        case "getClients":
-            await websocket.send(json.dumps(clients))
 
-        case "changeSceneByName":
+
+
+        if request["id"] in clients.keys():
+            await websocket.send(json.dumps(request["id"]))
+        else:
+            await websocket.send(json.dumps("Invalid user or not registered"))
+            return
+
+        command = request["data"]["command"]
+        if command == "getClients":
+            await websocket.send(json.dumps(clients))
+        elif command == "changeSceneByName":
             await changeSceneByName(request["data"]["args"])
             await websocket.send(json.dumps("Scene changed"))
-
-        case "changeToMyScene":
+        elif command == "changeToMyScene":
             await changeSceneByName(clients[request["id"]])
             await websocket.send(json.dumps("Scene changed successfully"))
-        case other:
+        else:
             await websocket.send(json.dumps("Invalid command"))
 
-
-    #await websocket.send()
-    #print(socket.gethostbyname(socket.gethostname()))
-    print(request["id"] + " : " + request["data"]["command"])
+        logging.info("%s : %s", request["id"], command)
+    except websockets.exceptions.ConnectionClosed as e:
+        logging.info("Connection closed: %s", e)
+    except Exception as e:
+        logging.error("Error in handler: %s", e)
  
  
  

@@ -4,7 +4,7 @@ import json
 import getmac
 
 
-SERVER_IP = "25.36.165.73"
+SERVER_IP = "127.0.0.1"
 SERVER_PORT = 6059
 
 exit = False
@@ -14,6 +14,17 @@ message = { "id" : getmac.get_mac_address(),
                 "command" : "",
                 "args" : ""
             }}
+
+
+async def login():
+    async with websockets.connect("ws://" + SERVER_IP + ":" + str(SERVER_PORT)) as websocket:
+
+        message["data"]["command"] = "getClients"
+        await websocket.send(json.dumps(message))
+        response = await websocket.recv()
+        response = json.loads(response)
+
+        return response
 
 
 async def sendRequest(request):
