@@ -14,12 +14,7 @@ ws = simpleobsws.WebSocketClient(url = 'ws://localhost:3945', password = '', ide
 
 
 
-clients = {
-    "hoa" : "Hoa",
-    "pop-os" : "Hoa",
-    "Gustavo" : "Gustavo",
-    "269142150823767" : "Hoa"
-}
+clients = {}
 ##with open("utilisateurs.json", "r") as file:
     ##clients = json.load(file)
 """
@@ -50,12 +45,6 @@ async def changeSceneByName(name):
 
 
 
-
-
-
-
-
-
  
 # WebSocket handler function
 async def handler(websocket, path):
@@ -63,35 +52,42 @@ async def handler(websocket, path):
         data = await websocket.recv()
         request = json.loads(data)
 
-
-        #Login
-        if request["data"]["command"] == "login":
-            if request["id"] not in clients.keys():
-                clients[request["id"]] = request["data"]["args"]
-                await websocket.send(json.dumps("Logged in successfully"))
-            else:
-                await websocket.send(json.dumps("Already logged in"))
-        
-
-
-
-        if request["id"] in clients.keys():
-            await websocket.send(json.dumps(request["id"]))
-        else:
-            await websocket.send(json.dumps("Invalid user or not registered"))
-            return
-
         command = request["data"]["command"]
-        if command == "getClients":
-            await websocket.send(json.dumps(clients))
-        elif command == "changeSceneByName":
-            await changeSceneByName(request["data"]["args"])
-            await websocket.send(json.dumps("Scene changed"))
-        elif command == "changeToMyScene":
-            await changeSceneByName(clients[request["id"]])
-            await websocket.send(json.dumps("Scene changed successfully"))
-        else:
-            await websocket.send(json.dumps("Invalid command"))
+
+        match command:
+
+            case "connected":
+                #vérifie si l'utilisateur est connecté
+                if request["id"] in clients.keys():
+                    await websocket.send(json.dumps("Connected"))
+                else:
+                    await websocket.send(json.dumps("Not connected"))
+            
+            case "signUp":
+                if request["id"] not in clients.keys():
+                    clients[request["id"]] = request["data"]["args"]
+                    await websocket.send(json.dumps("Signed up"))
+                else:
+                    await websocket.send(json.dumps("Already signed up"))
+
+            case "getUsername":
+                await websocket.send(json.dumps(clients[request["id"]]))
+
+            case "getClients":
+                await websocket.send(json.dumps(clients))
+    
+            case "changeSceneByName":
+                await changeSceneByName(request["data"]["args"])
+                await websocket.send(json.dumps("Scene changed"))
+    
+            case "changeToMyScene":
+                await changeSceneByName(clients[request["id"]])
+                await websocket.send(json.dumps("Scene changed successfully"))
+    
+            case _:
+                await websocket.send(json.dumps("Invalid command"))
+
+
 
         logging.info("%s : %s", request["id"], command)
     except websockets.exceptions.ConnectionClosed as e:

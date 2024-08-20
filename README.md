@@ -8,6 +8,7 @@ This project will be build upon the obs-websocket project, and the NDI technolog
 - OBS Studio >= 29.1.3
 - Python >= 3.11.4
 - simpleobsws >= 1.4.0 
+- CustomTkinter >= 5.2.2
 # Credits
 - Le Luet Hôa 
 - Moreira Vidal Pereira Gustavo
